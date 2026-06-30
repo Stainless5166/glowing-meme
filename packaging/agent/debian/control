@@ -1,0 +1,14 @@
+Source: glowing-meme-agent
+Section: admin
+Priority: optional
+Maintainer: Glowing Meme Team <team@glowing-meme.invalid>
+Build-Depends: debhelper (>= 13)
+Standards-Version: 4.6.2
+Homepage: https://github.com/glowing-meme/glowing-meme
+
+Package: glowing-meme-agent
+Architecture: all
+Depends: ${misc:Depends}, python3, python3-aiohttp, python3-psutil, systemd
+Description: Glowing Meme agent for Tailnet machine monitoring
+ A small read-only HTTP agent that exposes minimal operational
+ information to the Glowing Meme monitor over the Tailnet.

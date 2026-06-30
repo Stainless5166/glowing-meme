@@ -1,0 +1,15 @@
+Source: glowing-meme-monitor
+Section: admin
+Priority: optional
+Maintainer: Glowing Meme Team <team@glowing-meme.invalid>
+Build-Depends: debhelper (>= 13), python3, python3-installer
+Standards-Version: 4.6.2
+Homepage: https://github.com/glowing-meme/glowing-meme
+
+Package: glowing-meme-monitor
+Architecture: all
+Depends: ${misc:Depends}, python3, python3-httpx, python3-rich, tailscale
+Recommends: ghostty
+Description: Glowing Meme monitor for Tailnet machines
+ A CLI monitor that discovers and polls Glowing Meme agents
+ over a Tailnet.

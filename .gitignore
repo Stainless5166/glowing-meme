@@ -206,6 +206,15 @@ tempCodeRunnerFile.py
 # Ruff stuff:
 .ruff_cache/
 
+# Packaging build artifacts
+*.pkg.tar.zst
+*.deb
+*.changes
+*.buildinfo
+packaging/*/pkg/
+packaging/*/src/
+packaging/*/*.whl
+
 # PyPI configuration file
 .pypirc
 

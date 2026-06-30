@@ -1,6 +1,36 @@
-bm-tailnet-monitor/
+glowing-meme/
   README.md
   AGENTS.md
+  LICENSE
+  pyproject.toml
+  uv.lock
+  Makefile
+  scripts/
+    build_packages.sh
   docs/
     DESIGN.md
     VALIDATION_TESTS.md
+    PACKAGING.md
+  src/glowing_meme/
+    __init__.py
+    app.py
+    config.py
+    discovery.py
+    models.py
+    polling.py
+    ui_cli.py
+  agent/
+    __init__.py
+    agent.py
+    glowing-meme-agent.service
+  packaging/
+    agent/
+      PKGBUILD
+      glowing-meme-agent.install
+      debian/
+    monitor/
+      PKGBUILD
+      glowing-meme-monitor.desktop
+      glowing-meme-monitor-launcher
+      debian/
+  tests/

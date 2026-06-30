@@ -1,0 +1,23 @@
+[Unit]
+Description=Glowing Meme Agent
+After=network-online.target tailscaled.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=glowing-meme-agent
+Group=glowing-meme-agent
+Environment=GM_AGENT_HOST=0.0.0.0
+Environment=GM_AGENT_PORT=8787
+ExecStart=/usr/bin/python3 /opt/glowing-meme-agent/agent.py
+Restart=always
+RestartSec=5
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/tmp
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,29 @@
+# Maintainer: Glowing Meme Team <team@glowing-meme.invalid>
+pkgbase=glowing-meme-monitor
+pkgname=glowing-meme-monitor
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Glowing Meme monitor for Tailnet machines"
+arch=('any')
+url="https://github.com/glowing-meme/glowing-meme"
+license=('GPL-3.0-or-later')
+depends=('python' 'python-httpx' 'python-rich' 'tailscale')
+optdepends=('ghostty: preferred terminal emulator')
+makedepends=('python-installer')
+_wheel="glowing-meme-monitor.whl"
+
+source=(
+    "$_wheel"
+    "glowing-meme-monitor.desktop"
+    "glowing-meme-monitor-launcher"
+)
+noextract=("$_wheel")
+sha256sums=('SKIP' 'SKIP' 'SKIP')
+
+package() {
+    python -m installer --destdir="$pkgdir" "$srcdir/$_wheel"
+    install -Dm755 "$srcdir/glowing-meme-monitor-launcher" \
+        "$pkgdir/usr/bin/glowing-meme-monitor-launcher"
+    install -Dm644 "$srcdir/glowing-meme-monitor.desktop" \
+        "$pkgdir/usr/share/applications/glowing-meme-monitor.desktop"
+}

@@ -1,0 +1,22 @@
+# Maintainer: Glowing Meme Team <team@glowing-meme.invalid>
+pkgbase=glowing-meme-agent
+pkgname=glowing-meme-agent
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Glowing Meme agent for Tailnet machine monitoring"
+arch=('any')
+url="https://github.com/glowing-meme/glowing-meme"
+license=('GPL-3.0-or-later')
+depends=('python' 'python-aiohttp' 'python-psutil' 'systemd')
+install=glowing-meme-agent.install
+source=(
+    "agent.py"
+    "glowing-meme-agent.service"
+)
+sha256sums=('SKIP' 'SKIP')
+
+package() {
+    install -Dm755 "$srcdir/agent.py" "$pkgdir/opt/glowing-meme-agent/agent.py"
+    install -Dm644 "$srcdir/glowing-meme-agent.service" \
+        "$pkgdir/usr/lib/systemd/system/glowing-meme-agent.service"
+}

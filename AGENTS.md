@@ -5,8 +5,8 @@ machines.
 
 ## Purpose
 
-The agent exposes minimal operational information to the desktop monitor over
-the Tailnet.
+The agent exposes minimal operational information to the Glowing Meme monitor
+over the Tailnet.
 
 It is intentionally small.
 
@@ -53,7 +53,7 @@ to the Tailscale interface or equivalent network controls are used.
 Preferred access path:
 
 ```text
-Desktop monitor -> Tailscale IP -> Agent HTTP server
+Glowing Meme monitor -> Tailscale IP -> Agent HTTP server
 ```
 
 ## Endpoints
@@ -67,7 +67,7 @@ Required response fields:
 ```json
 {
   "ok": true,
-  "agent": "bm-monitor-agent",
+  "agent": "glowing-meme-agent",
   "version": "0.1.0",
   "timestamp": "2026-06-30T15:00:00+00:00"
 }
@@ -82,7 +82,7 @@ Required response fields:
 ```json
 {
   "hostname": "machine-name",
-  "agent": "bm-monitor-agent",
+  "agent": "glowing-meme-agent",
   "version": "0.1.0",
   "uptime_seconds": 123456,
   "agent_uptime_seconds": 120,
@@ -110,24 +110,24 @@ Required response fields:
 Suggested service name:
 
 ```text
-bm-monitor-agent.service
+glowing-meme-agent.service
 ```
 
 Suggested unit file:
 
 ```ini
 [Unit]
-Description=BM Monitor Agent
+Description=Glowing Meme Agent
 After=network-online.target tailscaled.service
 Wants=network-online.target
 
 [Service]
 Type=simple
-User=bm-monitor-agent
-Group=bm-monitor-agent
-Environment=BM_AGENT_HOST=0.0.0.0
-Environment=BM_AGENT_PORT=8787
-ExecStart=/opt/bm-monitor-agent/.venv/bin/python /opt/bm-monitor-agent/agent.py
+User=glowing-meme-agent
+Group=glowing-meme-agent
+Environment=GM_AGENT_HOST=0.0.0.0
+Environment=GM_AGENT_PORT=8787
+ExecStart=/usr/bin/python3 /opt/glowing-meme-agent/agent.py
 Restart=always
 RestartSec=5
 
@@ -146,15 +146,14 @@ WantedBy=multi-user.target
 Recommended path:
 
 ```text
-/opt/bm-monitor-agent/
+/opt/glowing-meme-agent/
 ```
 
 Recommended files:
 
 ```text
-/opt/bm-monitor-agent/agent.py
-/opt/bm-monitor-agent/.venv/
-/etc/systemd/system/bm-monitor-agent.service
+/opt/glowing-meme-agent/agent.py
+/etc/systemd/system/glowing-meme-agent.service
 ```
 
 ## Agent User
@@ -166,7 +165,7 @@ sudo useradd \
   --system \
   --no-create-home \
   --shell /usr/sbin/nologin \
-  bm-monitor-agent
+  glowing-meme-agent
 ```
 
 ## Firewall
@@ -185,12 +184,14 @@ Tailscale ACLs should also restrict access:
   "acls": [
     {
       "action": "accept",
-      "src": ["tag:monitor-controller"],
-      "dst": ["tag:monitor-agent:8787"]
+      "src": ["tag:glowing-meme-agent"],
+      "dst": ["tag:glowing-meme-agent:8787"]
     }
   ]
 }
 ```
+
+Replace `src` with the tag of the machine running the monitor.
 
 ## Versioning
 
@@ -237,7 +238,7 @@ Example:
 ```json
 {
   "ok": false,
-  "agent": "bm-monitor-agent",
+  "agent": "glowing-meme-agent",
   "version": "0.1.0",
   "error": "unable to read disk statistics",
   "timestamp": "2026-06-30T15:00:00+00:00"

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Glowing Meme Monitor
+Comment=Monitor Glowing Meme agents on the Tailnet
+Exec=glowing-meme-monitor-launcher
+Type=Application
+Terminal=false
+Icon=glowing-meme-monitor
+Categories=System;Monitor;

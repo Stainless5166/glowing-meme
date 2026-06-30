@@ -1,0 +1,11 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_install:
+	install -D -m 755 agent.py debian/glowing-meme-agent/opt/glowing-meme-agent/agent.py
+	install -D -m 644 glowing-meme-agent.service \
+		debian/glowing-meme-agent/usr/lib/systemd/system/glowing-meme-agent.service
+
+override_dh_auto_build:

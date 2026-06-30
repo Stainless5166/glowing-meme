@@ -1,0 +1,13 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_install:
+	python3 -m installer --destdir=$(CURDIR)/debian/glowing-meme-monitor $(CURDIR)/*.whl
+	install -D -m 755 glowing-meme-monitor-launcher \
+		$(CURDIR)/debian/glowing-meme-monitor/usr/bin/glowing-meme-monitor-launcher
+	install -D -m 644 glowing-meme-monitor.desktop \
+		$(CURDIR)/debian/glowing-meme-monitor/usr/share/applications/glowing-meme-monitor.desktop
+
+override_dh_auto_build:

@@ -1,0 +1,15 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    configure)
+        if ! id -u glowing-meme-agent >/dev/null 2>&1; then
+            useradd --system --no-create-home --shell /usr/sbin/nologin glowing-meme-agent
+        fi
+        systemctl daemon-reload >/dev/null || true
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0

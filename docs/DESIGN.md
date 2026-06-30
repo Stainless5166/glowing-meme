@@ -2,14 +2,14 @@
 
 ## Project Name
 
-BM Tailnet Monitor
+Glowing Meme
 
 ## Summary
 
-BM Tailnet Monitor is a Linux desktop application that monitors tagged
-Tailscale machines. It discovers machines through the Tailscale Admin API,
-filters devices by tag, checks live connectivity over the Tailnet, and polls a
-small Python agent on each monitored Linux machine.
+Glowing Meme is a Linux monitor for tagged Tailscale machines. It discovers
+machines by running `tailscale status --json` locally, filters devices by tag,
+checks live connectivity over the Tailnet, and polls a small Python agent on
+each monitored Linux machine.
 
 ## Primary Use Case
 
@@ -20,18 +20,18 @@ are online and healthy without logging into each machine manually.
 
 ```text
 +---------------------+
-| Linux Desktop App   |
-| PySide6 / Python    |
+| Linux Monitor CLI   |
+| rich / Python       |
 +----------+----------+
            |
-           | Tailscale Admin API
+           | tailscale status --json
            v
 +---------------------+
 | Tailscale Inventory |
 +---------------------+
 
 +---------------------+
-| Linux Desktop App   |
+| Linux Monitor CLI   |
 +----------+----------+
            |
            | HTTP over Tailnet
@@ -44,17 +44,16 @@ are online and healthy without logging into each machine manually.
 
 ## Components
 
-### Desktop Monitor
+### Monitor CLI
 
 Responsibilities:
 
 - Read configuration.
-- Authenticate to the Tailscale Admin API.
-- Fetch device inventory.
+- Discover machines via `tailscale status --json`.
 - Filter machines by tag.
 - Poll each machine's agent over Tailscale.
 - Maintain current machine state.
-- Display status in a Linux desktop UI.
+- Display status in an in-place terminal UI.
 - Surface failures clearly.
 
 Non-responsibilities:
@@ -64,19 +63,15 @@ Non-responsibilities:
 - Full asset management.
 - Collection of sensitive data.
 
-### Tailscale API Client
+### Tailscale Discovery Client
 
 Responsibilities:
 
-- List devices in the configured Tailnet.
+- Run `tailscale status --json` locally.
+- Parse the peer and self node lists.
+- Filter devices by tag.
 - Return raw device data to the monitor service.
-- Handle API errors and timeouts.
-
-Expected API:
-
-```text
-GET /api/v2/tailnet/{tailnet}/devices
-```
+- Handle command errors and timeouts.
 
 ### Polling Service
 
@@ -98,12 +93,12 @@ Responsibilities:
 - Run under systemd.
 - Run as a restricted service user.
 
-### Desktop UI
+### Terminal UI
 
 Initial UI requirements:
 
 - Show list of tagged machines.
-- Show online/offline status.
+- Show online/offline status from Tailscale.
 - Show hostname.
 - Show Tailscale IP.
 - Show agent version.
@@ -113,12 +108,14 @@ Initial UI requirements:
 - Show last successful poll time.
 - Show error summary if offline or unhealthy.
 
-Optional tray status:
+The UI redraws in place using `rich.live.Live` rather than scrolling.
+
+Future tray status (PySide6 desktop UI):
 
 ```text
 Green: all monitored machines healthy
 Amber: one or more machines unhealthy
-Red: no machines healthy or API failure
+Red: no machines healthy or discovery failure
 Grey: monitor paused or not configured
 ```
 
@@ -128,9 +125,9 @@ Grey: monitor paused or not configured
 
 ```text
 Timer fires
-  -> Desktop app calls Tailscale Admin API
+  -> Monitor runs tailscale status --json
   -> Receives device list
-  -> Filters by tag:monitor-agent
+  -> Filters by tag:glowing-meme-agent
   -> Extracts Tailscale IPs
   -> Updates known device list
 ```
@@ -160,30 +157,31 @@ These should be configurable.
 
 ## Configuration
 
-Required desktop settings:
+Required monitor settings:
 
 ```text
-TAILSCALE_TAILNET
-TAILSCALE_API_KEY
-MONITOR_AGENT_TAG
-MONITOR_AGENT_PORT
+GM_MONITOR_TAG
+default: tag:glowing-meme-agent
+
+GM_AGENT_PORT
+default: 8787
 ```
 
 Default values:
 
 ```text
-MONITOR_AGENT_TAG=tag:monitor-agent
-MONITOR_AGENT_PORT=8787
-DISCOVERY_INTERVAL_SECONDS=120
-POLL_INTERVAL_SECONDS=30
-HTTP_TIMEOUT_SECONDS=3
+GM_MONITOR_TAG=tag:glowing-meme-agent
+GM_AGENT_PORT=8787
+GM_DISCOVERY_INTERVAL_SECONDS=120
+GM_POLL_INTERVAL_SECONDS=30
+GM_HTTP_TIMEOUT_SECONDS=3
 ```
 
 Agent settings:
 
 ```text
-BM_AGENT_HOST=0.0.0.0
-BM_AGENT_PORT=8787
+GM_AGENT_HOST=0.0.0.0
+GM_AGENT_PORT=8787
 ```
 
 ## Device Identity
@@ -211,8 +209,8 @@ Preferred order:
 2. IPv6 Tailscale address
 ```
 
-The first implementation may use the first available address, but this should
-be made explicit and tested.
+The first implementation uses the first available address of each family, with
+IPv4 preferred.
 
 ## State Model
 
@@ -224,7 +222,8 @@ Each monitored machine should have a state similar to:
   "name": "string",
   "hostname": "string",
   "tailscale_ip": "100.x.y.z",
-  "tags": ["tag:monitor-agent"],
+  "tags": ["tag:glowing-meme-agent"],
+  "online": true,
   "discovered_at": "2026-06-30T15:00:00+00:00",
   "last_seen_by_tailscale": "2026-06-30T14:59:00+00:00",
   "last_poll_attempt": "2026-06-30T15:00:00+00:00",
@@ -250,18 +249,18 @@ stale
 
 ## Error Handling
 
-### Tailscale API Failure
+### Discovery Failure
 
-The desktop app should:
+The monitor should:
 
 - Keep displaying the last known device list.
 - Mark discovery status as failed.
 - Continue polling previously known devices.
-- Show a visible API error.
+- Show a visible discovery error.
 
 ### Agent Timeout
 
-The desktop app should:
+The monitor should:
 
 - Mark the device as unreachable.
 - Preserve the last successful data.
@@ -270,7 +269,7 @@ The desktop app should:
 
 ### Invalid Agent JSON
 
-The desktop app should:
+The monitor should:
 
 - Mark the device as `agent_error`.
 - Store a parse error summary.
@@ -278,7 +277,7 @@ The desktop app should:
 
 ### Missing Agent Version
 
-The desktop app should:
+The monitor should:
 
 - Mark the device as degraded or `agent_error`.
 - Continue showing basic connectivity if possible.
@@ -292,7 +291,6 @@ Security controls:
 - Agent runs as an unprivileged system user.
 - Agent has a restricted systemd sandbox.
 - Agent exposes only fixed read-only endpoints.
-- Desktop API key is stored securely where practical.
 
 The agent must not expose clinical or patient data.
 
@@ -328,9 +326,9 @@ The MVP is complete when:
 
 - Agent can run under systemd.
 - Agent responds to `/health` and `/info`.
-- Desktop app can list tagged devices from Tailscale.
-- Desktop app can poll all discovered agents.
-- Desktop UI shows current status.
+- Monitor can list tagged devices from `tailscale status --json`.
+- Monitor can poll all discovered agents.
+- Terminal UI shows current status.
 - Basic failure states are visible.
 - Validation tests pass.
 
@@ -338,8 +336,9 @@ The MVP is complete when:
 
 Possible later additions:
 
-- `.deb` packaging.
-- AppImage packaging.
+- PySide6 desktop UI and tray widget.
+- Tailscale Admin API discovery option.
+- `.deb` and AppImage desktop packaging.
 - Config UI.
 - Desktop notifications.
 - Historical status database.

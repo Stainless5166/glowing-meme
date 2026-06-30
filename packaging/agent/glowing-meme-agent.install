@@ -1,0 +1,23 @@
+post_install() {
+    if ! id -u glowing-meme-agent >/dev/null 2>&1; then
+        useradd --system --no-create-home --shell /usr/sbin/nologin glowing-meme-agent
+    fi
+    systemctl daemon-reload >/dev/null || true
+}
+
+post_upgrade() {
+    systemctl daemon-reload >/dev/null || true
+}
+
+pre_remove() {
+    systemctl stop glowing-meme-agent.service >/dev/null 2>&1 || true
+}
+
+post_remove() {
+    systemctl daemon-reload >/dev/null || true
+    if [ "$1" = "remove" ]; then
+        if id -u glowing-meme-agent >/dev/null 2>&1; then
+            userdel glowing-meme-agent || true
+        fi
+    fi
+}

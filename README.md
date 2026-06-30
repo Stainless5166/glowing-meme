@@ -1,17 +1,17 @@
-# BM Tailnet Monitor
+# Glowing Meme
 
-A Linux-native desktop monitor for tagged Tailscale machines.
+A Linux-native monitor for tagged Tailscale machines.
 
-The desktop application discovers machines in a Tailnet using the Tailscale
-Admin API, filters them by tag, checks connection status, and polls a small
-Python agent running on each active Linux machine.
+The monitor runs on a Tailnet-connected Linux machine, discovers other machines
+using the local `tailscale status --json` command, and polls a small Python
+agent running on each tagged Linux machine.
 
 ## Goals
 
 - Monitor tagged Tailscale machines.
 - Show online/offline status.
 - Poll a lightweight agent for minimal operational information.
-- Run as a Linux desktop application or tray widget.
+- Run as a Linux terminal application (with a desktop UI as a future option).
 - Keep the agent small, boring, and auditable.
 
 ## Non-goals
@@ -20,94 +20,83 @@ Python agent running on each active Linux machine.
 - No remote command execution.
 - No general-purpose fleet management.
 - No dependency on public network exposure.
+- No Tailscale Admin API required for the MVP.
 
 ## Components
 
 ```text
-Desktop Monitor
+Monitor CLI
   |
-  | Tailscale Admin API
+  | tailscale status --json
   v
 Tailscale Device Inventory
 
-Desktop Monitor
+Monitor CLI
   |
   | HTTP over Tailnet
   v
-Python Agent on Linux Machines
+Glowing Meme Agent on Linux Machines
 ```
 
 ## Repository Layout
 
 ```text
-bm-tailnet-monitor/
+glowing-meme/
   README.md
   AGENTS.md
   docs/
     DESIGN.md
     VALIDATION_TESTS.md
-  src/
-    bm_tailnet_monitor/
-      app.py
-      tailscale.py
-      polling.py
-      models.py
-      ui_qt.py
+    PACKAGING.md
+  src/glowing_meme/
+    app.py
+    config.py
+    discovery.py
+    models.py
+    polling.py
+    ui_cli.py
   agent/
     agent.py
-    bm-monitor-agent.service
+    glowing-meme-agent.service
+  packaging/
+    agent/
+    monitor/
+  scripts/build_packages.sh
 ```
 
-## Initial Technology Choices
+## Technology Choices
 
-### Desktop application
+### Monitor
 
 - Python 3.11+
-- PySide6
-- httpx
-- asyncio
+- `uv` for dependency management
+- `httpx` for agent polling
+- `rich` for the in-place terminal UI
+- `PySide6` for a future desktop UI
 
 ### Agent
 
 - Python 3.11+
-- aiohttp
-- psutil
-- systemd
+- `aiohttp`
+- `psutil`
+- `systemd` service
 
 ## Tailscale Tags
 
 Recommended tags:
 
 ```text
-tag:monitor-controller
-tag:monitor-agent
-```
-
-The desktop monitor machine should use:
-
-```text
-tag:monitor-controller
+tag:glowing-meme-agent
 ```
 
 Machines running the agent should use:
 
 ```text
-tag:monitor-agent
+tag:glowing-meme-agent
 ```
 
-## Tailscale ACL Example
-
-```json
-{
-  "acls": [
-    {
-      "action": "accept",
-      "src": ["tag:monitor-controller"],
-      "dst": ["tag:monitor-agent:8787"]
-    }
-  ]
-}
-```
+The monitor itself must run on a Tailnet-connected machine with the Tailscale
+CLI installed.
 
 ## Agent API
 
@@ -129,7 +118,7 @@ Example health response:
 ```json
 {
   "ok": true,
-  "agent": "bm-monitor-agent",
+  "agent": "glowing-meme-agent",
   "version": "0.1.0",
   "timestamp": "2026-06-30T15:00:00+00:00"
 }
@@ -140,7 +129,7 @@ Example info response:
 ```json
 {
   "hostname": "reception-01",
-  "agent": "bm-monitor-agent",
+  "agent": "glowing-meme-agent",
   "version": "0.1.0",
   "uptime_seconds": 123456,
   "agent_uptime_seconds": 120,
@@ -165,59 +154,52 @@ Example info response:
 
 ## Configuration
 
-The desktop app requires:
-
-```text
-TAILSCALE_TAILNET
-TAILSCALE_API_KEY
-MONITOR_AGENT_TAG
-MONITOR_AGENT_PORT
-```
-
-Example:
-
-```bash
-export TAILSCALE_TAILNET="example.com"
-export TAILSCALE_API_KEY="tskey-api-..."
-export MONITOR_AGENT_TAG="tag:monitor-agent"
-export MONITOR_AGENT_PORT="8787"
-```
+### Agent
 
 The agent supports:
 
 ```text
-BM_AGENT_HOST
-BM_AGENT_PORT
+GM_AGENT_HOST
+GM_AGENT_PORT
 ```
 
 Example:
 
 ```bash
-export BM_AGENT_HOST="0.0.0.0"
-export BM_AGENT_PORT="8787"
+export GM_AGENT_HOST="0.0.0.0"
+export GM_AGENT_PORT="8787"
+```
+
+### Monitor
+
+The monitor supports:
+
+```text
+GM_MONITOR_TAG
+default: tag:glowing-meme-agent
+
+GM_AGENT_PORT
+default: 8787
+
+GM_DISCOVERY_INTERVAL_SECONDS
+default: 120
+
+GM_POLL_INTERVAL_SECONDS
+default: 30
+
+GM_HTTP_TIMEOUT_SECONDS
+default: 3
 ```
 
 ## Development Setup
 
-Create a virtual environment:
+Install `uv`, then create the environment:
 
 ```bash
-python3 -m venv .venv
-. .venv/bin/activate
-pip install -U pip
+uv sync --all-extras
 ```
 
-Install desktop dependencies:
-
-```bash
-pip install PySide6 httpx
-```
-
-Install agent dependencies:
-
-```bash
-pip install aiohttp psutil
-```
+This installs the monitor, agent, desktop, and development dependencies.
 
 ## Running the Agent Manually
 
@@ -232,30 +214,53 @@ curl http://127.0.0.1:8787/health
 curl http://127.0.0.1:8787/info
 ```
 
-## Running the Desktop Monitor
+## Running the Monitor CLI
 
-Initial CLI mode should be implemented before the full desktop UI.
-
-Example future command:
+The monitor must run on a machine that is connected to the Tailnet and has the
+Tailscale CLI installed.
 
 ```bash
-python -m bm_tailnet_monitor.app
+glowing-meme-monitor
 ```
 
-## Packaging Targets
+Or from the source tree:
 
-Preferred first targets:
+```bash
+python -m glowing_meme.app
+```
 
-- Agent: `.deb` package plus systemd service.
-- Desktop monitor: `.deb` or AppImage.
+The terminal UI redraws in place, showing discovered machines and their status.
 
-Flatpak can be considered later if useful.
+## Formatting
+
+Format all Python code with `black`:
+
+```bash
+make fmt
+```
+
+## Tests
+
+```bash
+make test
+```
+
+## Packaging
+
+Build all packages:
+
+```bash
+make build-packages
+```
+
+This produces Arch Linux packages and Debian packages in `dist/`.
+
+See `docs/PACKAGING.md` for detailed packaging instructions.
 
 ## Security Principles
 
 - Access to the agent must be limited to the Tailnet.
-- Tailscale ACLs should restrict access to `tag:monitor-controller`.
+- Tailscale ACLs should restrict access to `tag:glowing-meme-agent:8787`.
 - The agent must not expose sensitive data.
 - The agent must not execute remote commands.
-- The desktop Tailscale API key must be treated as secret.
 - Logs should be minimal.

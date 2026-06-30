@@ -1,0 +1,24 @@
+#!/bin/sh
+# Launch the Glowing Meme monitor in a terminal emulator.
+# Prefer ghostty, then fall back to common system terminals.
+
+if command -v ghostty >/dev/null 2>&1; then
+    exec ghostty -- glowing-meme-monitor
+elif command -v x-terminal-emulator >/dev/null 2>&1; then
+    exec x-terminal-emulator -e glowing-meme-monitor
+elif command -v gnome-terminal >/dev/null 2>&1; then
+    exec gnome-terminal -- glowing-meme-monitor
+elif command -v konsole >/dev/null 2>&1; then
+    exec konsole -e glowing-meme-monitor
+elif command -v xfce4-terminal >/dev/null 2>&1; then
+    exec xfce4-terminal -e glowing-meme-monitor
+elif command -v alacritty >/dev/null 2>&1; then
+    exec alacritty -e glowing-meme-monitor
+elif command -v kitty >/dev/null 2>&1; then
+    exec kitty glowing-meme-monitor
+elif command -v xterm >/dev/null 2>&1; then
+    exec xterm -e glowing-meme-monitor
+else
+    echo "No suitable terminal emulator found. Please install ghostty or another terminal." >&2
+    exit 1
+fi
