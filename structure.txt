@@ -1,0 +1,6 @@
+bm-tailnet-monitor/
+  README.md
+  AGENTS.md
+  docs/
+    DESIGN.md
+    VALIDATION_TESTS.md
