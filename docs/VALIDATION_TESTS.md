@@ -338,7 +338,7 @@ Expected result:
 
 ```text
 Machine status is healthy.
-Hostname, IP, version, uptime, load, and memory are displayed.
+Hostname, status glyph, connection type, version, uptime, load, memory, and disk are displayed.
 ```
 
 Required: yes.

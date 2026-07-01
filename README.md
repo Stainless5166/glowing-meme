@@ -189,7 +189,15 @@ default: 30
 
 GM_HTTP_TIMEOUT_SECONDS
 default: 3
+
+GM_CORPORATE_NETWORKS
+default: (empty)
+example: 10.0.0.0/8,172.16.0.0/12
 ```
+
+`GM_CORPORATE_NETWORKS` is a comma-separated list of CIDR ranges. When an
+agent reports a network interface address inside one of these ranges, the
+monitor displays it as connected to the corporate network.
 
 ## Development Setup
 

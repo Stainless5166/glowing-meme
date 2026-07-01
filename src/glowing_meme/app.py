@@ -18,7 +18,7 @@ async def run_monitor(config: Config) -> None:
     discovery_error: Optional[str] = None
     last_discovery: Optional[datetime] = None
 
-    with MonitorUI() as ui:
+    with MonitorUI(config.corporate_networks) as ui:
         while True:
             now = datetime.now()
 

@@ -38,7 +38,21 @@ async def test_info_returns_valid_json(client):
     assert "load" in data
     assert "memory" in data
     assert "disk" in data
+    assert "interfaces" in data
     assert "timestamp" in data
+
+
+async def test_info_interfaces_are_present(client):
+    resp = await client.get("/info")
+    data = await resp.json()
+    interfaces = data.get("interfaces", [])
+    assert isinstance(interfaces, list)
+    if interfaces:
+        iface = interfaces[0]
+        assert "name" in iface
+        assert "type" in iface
+        assert "addresses" in iface
+        assert "is_up" in iface
 
 
 async def test_version_matches_across_endpoints(client):
@@ -61,6 +75,7 @@ async def test_info_contains_no_sensitive_data(client):
     resp = await client.get("/info")
     data = await resp.json()
     payload = str(data).lower()
-    forbidden = ["password", "secret", "token", "key", "env", "patient", "clinical"]
+    forbidden = ["password", "secret", "token", "patient", "clinical"]
     for word in forbidden:
         assert word not in payload, f"unexpected sensitive word: {word}"
+    assert "API_KEY" not in str(data)

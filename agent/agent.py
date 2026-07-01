@@ -6,10 +6,12 @@ about the Linux machine it runs on. It must not expose sensitive data,
 execute remote commands, or perform arbitrary file reads.
 """
 
+import ipaddress
 import logging
 import os
 import time
 from datetime import datetime, timezone
+from typing import Any
 
 import aiohttp.web
 import psutil
@@ -31,6 +33,52 @@ _logger = logging.getLogger("glowing-meme-agent")
 
 def _iso_now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _interface_type(name: str) -> str:
+    if name == "tailscale0" or name.startswith("tailscale"):
+        return "tailscale"
+    if name == "lo":
+        return "loopback"
+    wireless_path = f"/sys/class/net/{name}/wireless"
+    if os.path.exists(wireless_path) or name.startswith(("wl", "wifi", "wlan")):
+        return "wifi"
+    if name.startswith(("en", "eth")):
+        return "ethernet"
+    return "other"
+
+
+def _get_interfaces() -> list[dict[str, Any]]:
+    try:
+        addrs = psutil.net_if_addrs()
+        stats = psutil.net_if_stats()
+    except Exception:  # pragma: no cover - defensive
+        return []
+
+    interfaces: list[dict[str, Any]] = []
+    for name, snicaddrs in addrs.items():
+        iface_stats = stats.get(name)
+        is_up = iface_stats.isup if iface_stats else False
+        addresses: list[str] = []
+        for addr in snicaddrs:
+            if addr.family == 2:  # IPv4
+                addresses.append(addr.address)
+            elif addr.family == 10:  # IPv6
+                addresses.append(addr.address)
+
+        if not addresses and name not in ("lo",):
+            continue
+
+        interfaces.append(
+            {
+                "name": name,
+                "type": _interface_type(name),
+                "addresses": addresses,
+                "is_up": is_up,
+            }
+        )
+
+    return interfaces
 
 
 @aiohttp.web.middleware
@@ -95,6 +143,8 @@ async def info(request: aiohttp.web.Request) -> aiohttp.web.Response:
     except Exception:  # pragma: no cover - defensive
         disk_data = {}
 
+    interfaces = _get_interfaces()
+
     return aiohttp.web.json_response(
         {
             "hostname": hostname,
@@ -105,6 +155,7 @@ async def info(request: aiohttp.web.Request) -> aiohttp.web.Response:
             "load": load,
             "memory": memory,
             "disk": disk_data,
+            "interfaces": interfaces,
             "timestamp": _iso_now(),
         }
     )
