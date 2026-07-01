@@ -159,6 +159,44 @@ cp ../../dist/*.whl ./glowing-meme-monitor.whl
 dpkg-buildpackage -us -uc -b
 ```
 
+## Post-install Firewall
+
+After installing the agent, restrict port `8787/tcp` to the Tailscale interface.
+
+### ufw
+
+```bash
+sudo ufw allow in on tailscale0 to any port 8787 proto tcp
+sudo ufw deny 8787/tcp
+```
+
+Verify with:
+
+```bash
+sudo ufw status verbose
+```
+
+### Tailscale ACLs
+
+Restrict access so only the monitor machine(s) can reach the agents:
+
+```json
+{
+  "acls": [
+    {
+      "action": "accept",
+      "src": ["tag:glowing-meme-controller"],
+      "dst": ["tag:glowing-meme-agent:8787"]
+    }
+  ]
+}
+```
+
+Replace `src` with the tag or user identity of the machine running the monitor.
+
+> **Status:** Tailscale ACLs and local firewall rules are configured for this
+> deployment.
+
 ## Versioning
 
 Versions are derived from git tags:

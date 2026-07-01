@@ -599,32 +599,32 @@ All required security tests pass.
 Use this table during validation.
 
 | Test ID | Result | Notes | Date | Tester |
-|---|---|---:|---|---|---|
-| 1.1 | Pending |  |  |  |
-| 1.2 | Pending |  |  |  |
-| 1.3 | Pending |  |  |  |
-| 1.4 | Pending |  |  |  |
-| 1.5 | Pending |  |  |  |
-| 1.6 | Pending |  |  |  |
-| 2.1 | Pending |  |  |  |
-| 2.2 | Pending |  |  |  |
-| 2.3 | Pending |  |  |  |
-| 2.4 | Pending |  |  |  |
-| 3.1 | Pending |  |  |  |
-| 3.2 | Pending |  |  |  |
-| 3.3 | Pending |  |  |  |
-| 4.1 | Pending |  |  |  |
-| 4.2 | Pending |  |  |  |
-| 4.3 | Pending |  |  |  |
-| 4.4 | Pending |  |  |  |
-| 4.5 | Pending |  |  |  |
-| 4.6 | Pending |  |  |  |
-| 4.7 | Pending |  |  |  |
-| 5.1 | Pending |  |  |  |
-| 5.2 | Pending |  |  |  |
-| 5.3 | Pending |  |  |  |
-| 5.4 | Pending |  |  |  |
-| 6.1 | Pending |  |  |  |
-| 6.2 | Pending |  |  |  |
-| 6.3 | Pending |  |  |  |
-| 6.4 | Pending |  |  |  |
+|---|---|---|---|---|
+| 1.1 | Pass | Service active on Quartz6F, rebecca, cygnus | 2026-07-01 | opencode |
+| 1.2 | Pass | Valid JSON from all reachable agents | 2026-07-01 | opencode |
+| 1.3 | Pass | Valid JSON from all reachable agents | 2026-07-01 | opencode |
+| 1.4 | Pass | Version 0.1.0 on deployed agents | 2026-07-01 | opencode |
+| 1.5 | Pass | systemd service enabled and active | 2026-07-01 | opencode |
+| 1.6 | Pass | /exec, /shell, /run return 404 | 2026-07-01 | opencode |
+| 2.1 | Partial | Reachable on Quartz6F, rebecca, halitea0; BMG-Consolidate and cygnus timeout | 2026-07-01 | opencode |
+| 2.2 | Not tested | Requires access from unauthorised Tailnet source | 2026-07-01 | opencode |
+| 2.3 | Not tested | Requires LAN IP access to test | 2026-07-01 | opencode |
+| 2.4 | Pass | 5 machines tagged with tag:glowing-meme-agent discovered | 2026-07-01 | opencode |
+| 3.1 | Pass | tailscale status --json returns tagged devices | 2026-07-01 | opencode |
+| 3.2 | Not tested |  | 2026-07-01 | opencode |
+| 3.3 | Not tested |  | 2026-07-01 | opencode |
+| 4.1 | Pass | glowing-meme-monitor starts without error | 2026-07-01 | opencode |
+| 4.2 | Pass | 5 tagged machines appear in monitor | 2026-07-01 | opencode |
+| 4.3 | Pass | Quartz6F, rebecca, halitea0 shown healthy | 2026-07-01 | opencode |
+| 4.4 | Pass | Quartz6F marked unreachable after stop | 2026-07-01 | opencode |
+| 4.5 | Pass | Quartz6F returns to healthy after restart | 2026-07-01 | opencode |
+| 4.6 | Not tested | Requires powering off a monitored machine | 2026-07-01 | opencode |
+| 4.7 | Pass | UI redraws in place during polling | 2026-07-01 | opencode |
+| 5.1 | Pass | No patient, billing, secret, or env data in responses | 2026-07-01 | opencode |
+| 5.2 | Pass | Memory values consistent with free -b | 2026-07-01 | opencode |
+| 5.3 | Pass | Disk values consistent with df -B1 / | 2026-07-01 | opencode |
+| 5.4 | Pass | Uptime consistent with /proc/uptime | 2026-07-01 | opencode |
+| 6.1 | Pass | Agent runs as glowing-meme-agent user | 2026-07-01 | opencode |
+| 6.2 | Pass | NoNewPrivileges, PrivateTmp, ProtectSystem, ProtectHome present | 2026-07-01 | opencode |
+| 6.3 | Not tested | Requires access from outside the Tailnet | 2026-07-01 | opencode |
+| 6.4 | Pass | Logs contain only paths and error summaries | 2026-07-01 | opencode |

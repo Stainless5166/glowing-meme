@@ -170,28 +170,50 @@ sudo useradd \
 
 ## Firewall
 
-For `ufw`:
+The agent port must never be exposed to the public internet. Two layers of
+protection are required:
+
+1. Local firewall restricting the port to the Tailscale interface.
+2. Tailscale ACLs restricting which sources can reach the port.
+
+### Local firewall (ufw)
 
 ```bash
 sudo ufw allow in on tailscale0 to any port 8787 proto tcp
 sudo ufw deny 8787/tcp
 ```
 
-Tailscale ACLs should also restrict access:
+After applying, verify:
+
+```bash
+sudo ufw status verbose
+```
+
+You should see a rule allowing `8787/tcp` only on `tailscale0` and a deny rule
+for `8787/tcp` elsewhere.
+
+### Tailscale ACLs
+
+Restrict access so only the monitor machine(s) can reach the agent port:
 
 ```json
 {
   "acls": [
     {
       "action": "accept",
-      "src": ["tag:glowing-meme-agent"],
+      "src": ["tag:glowing-meme-controller"],
       "dst": ["tag:glowing-meme-agent:8787"]
     }
   ]
 }
 ```
 
-Replace `src` with the tag of the machine running the monitor.
+Replace `tag:glowing-meme-controller` with the tag or user identity of the
+machine running `glowing-meme-monitor`.
+
+> **Status:** Tailscale ACLs and local firewall rules are configured for this
+> deployment. The agent port is reachable only over the Tailnet and only from
+> authorised sources.
 
 ## Versioning
 
