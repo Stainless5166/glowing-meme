@@ -120,6 +120,11 @@ async def info(request: aiohttp.web.Request) -> aiohttp.web.Response:
         load = [-1.0, -1.0, -1.0]
 
     try:
+        cpu_count = psutil.cpu_count() or -1
+    except Exception:  # pragma: no cover - defensive
+        cpu_count = -1
+
+    try:
         mem = psutil.virtual_memory()
         memory = {
             "total": mem.total,
@@ -152,6 +157,7 @@ async def info(request: aiohttp.web.Request) -> aiohttp.web.Response:
             "version": VERSION,
             "uptime_seconds": uptime_seconds,
             "agent_uptime_seconds": int(time.time() - _START_TIME),
+            "cpu_count": cpu_count,
             "load": load,
             "memory": memory,
             "disk": disk_data,

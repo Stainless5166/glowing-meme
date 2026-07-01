@@ -95,7 +95,7 @@ def _format_duration(seconds: int) -> str:
     return f"{seconds // 86400}d"
 
 
-def _format_bytes(value: int) -> str:
+def _format_bytes(value: float) -> str:
     for unit in ("B", "KB", "MB", "GB", "TB"):
         if value < 1024:
             return f"{value:.1f}{unit}"
@@ -133,11 +133,28 @@ def _format_disk(info: dict[str, Any]) -> Text:
 
 def _format_load(info: dict[str, Any]) -> Text:
     load = info.get("load", [])
-    if not load or load == [-1.0, -1.0, -1.0]:
+    cpu_count = info.get("cpu_count", 0)
+    if not load or load == [-1.0, -1.0, -1.0] or cpu_count is None or cpu_count <= 0:
         return Text("-", style="grey")
-    max_load = max(load)
-    style = "green" if max_load < 1 else "yellow" if max_load < 2 else "red"
-    return Text(" ".join(f"{value:.2f}" for value in load), style=style)
+
+    load1, load5, load15 = load
+    percent = min((load1 / cpu_count) * 100, 999)
+    style = "green" if percent < 70 else "yellow" if percent < 90 else "red"
+
+    if load1 > load15:
+        trend = ("▲", "red")
+    elif load1 < load15:
+        trend = ("▼", "green")
+    else:
+        trend = ("→", "grey")
+
+    return Text.assemble(
+        (f"{percent:.0f}%", style),
+        " ",
+        (trend[0], trend[1]),
+        " ",
+        (f"({load1:.1f}/{load5:.1f}/{load15:.1f})", "dim"),
+    )
 
 
 def _error_glyph(state: MachineState) -> Text:
@@ -160,7 +177,7 @@ def _render_table(
     table.add_column("Corp", ratio=2, min_width=10)
     table.add_column("Version", width=10)
     table.add_column("Uptime", width=8)
-    table.add_column("Load", width=14)
+    table.add_column("Load", width=22)
     table.add_column("Mem", ratio=2, min_width=20)
     table.add_column("Disk", ratio=2, min_width=20)
     table.add_column("Err", width=4)

@@ -39,6 +39,8 @@ async def test_info_returns_valid_json(client):
     assert "memory" in data
     assert "disk" in data
     assert "interfaces" in data
+    assert "cpu_count" in data
+    assert data["cpu_count"] > 0
     assert "timestamp" in data
 
 
